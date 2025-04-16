@@ -1,0 +1,209 @@
+-- Diamond Hub
+-- Créé par Moha
+
+-- Initialisation des services Roblox
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
+local UserInputService = game:GetService("UserInputService")
+
+-- Interface utilisateur
+local ScreenGui = Instance.new("ScreenGui")
+local MainFrame = Instance.new("Frame")
+local UICorner = Instance.new("UICorner")
+local UIGradient = Instance.new("UIGradient")
+local Title = Instance.new("TextLabel")
+local StaminaButton = Instance.new("TextButton")
+local IncreaseReachButton = Instance.new("TextButton")
+local DecreaseReachButton = Instance.new("TextButton")
+local ShowReachButton = Instance.new("TextButton")
+local TransparencySlider = Instance.new("TextButton")
+local CloseButton = Instance.new("TextButton")
+local UIStroke = Instance.new("UIStroke")
+
+-- Configuration générale de ScreenGui
+ScreenGui.Parent = Players.LocalPlayer:WaitForChild("PlayerGui")
+ScreenGui.Name = "DiamondHub"
+
+-- Frame principal
+MainFrame.Parent = ScreenGui
+MainFrame.Size = UDim2.new(0, 500, 0, 500)
+MainFrame.Position = UDim2.new(0.5, -250, 0.5, -250)
+MainFrame.BackgroundTransparency = 0
+MainFrame.BackgroundColor3 = Color3.fromRGB(30, 0, 50) -- Noir/Violet
+
+UICorner.Parent = MainFrame
+UICorner.CornerRadius = UDim.new(0, 15)
+
+UIGradient.Parent = MainFrame
+UIGradient.Color = ColorSequence.new{
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(50, 0, 90)), -- Violet foncé
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(30, 0, 50)) -- Noir/Violet
+}
+UIGradient.Rotation = 90
+
+UIStroke.Parent = MainFrame
+UIStroke.Color = Color3.fromRGB(255, 255, 255) -- Blanc
+UIStroke.Thickness = 2
+
+-- Titre du menu
+Title.Parent = MainFrame
+Title.Size = UDim2.new(1, 0, 0.1, 0)
+Title.Position = UDim2.new(0, 0, 0, 0)
+Title.BackgroundTransparency = 1
+Title.Text = "✨ Diamond Hub ✨"
+Title.TextColor3 = Color3.fromRGB(255, 255, 255) -- Blanc
+Title.Font = Enum.Font.GothamBold
+Title.TextScaled = true
+
+-- Bouton pour fermer le menu
+CloseButton.Parent = MainFrame
+CloseButton.Size = UDim2.new(0.1, 0, 0.1, 0)
+CloseButton.Position = UDim2.new(0.9, -10, 0, 10)
+CloseButton.BackgroundColor3 = Color3.fromRGB(200, 0, 0) -- Rouge
+CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255) -- Blanc
+CloseButton.TextScaled = true
+CloseButton.Font = Enum.Font.GothamBold
+CloseButton.Text = "X"
+
+local isVisible = true -- État du menu
+
+CloseButton.MouseButton1Click:Connect(function()
+    isVisible = not isVisible
+    MainFrame.Visible = isVisible
+end)
+
+-- Fonction pour créer des boutons stylisés
+local function createButton(parent, text, position)
+    local button = Instance.new("TextButton")
+    local buttonCorner = Instance.new("UICorner")
+    local buttonStroke = Instance.new("UIStroke")
+
+    button.Parent = parent
+    button.Size = UDim2.new(0.8, 0, 0.1, 0)
+    button.Position = position
+    button.BackgroundColor3 = Color3.fromRGB(50, 0, 80) -- Violet foncé
+    button.TextColor3 = Color3.fromRGB(255, 255, 255) -- Blanc
+    button.TextScaled = true
+    button.Font = Enum.Font.Gotham
+    button.Text = text
+
+    buttonCorner.Parent = button
+    buttonCorner.CornerRadius = UDim.new(0, 10)
+
+    buttonStroke.Parent = button
+    buttonStroke.Color = Color3.fromRGB(255, 255, 255) -- Blanc
+    buttonStroke.Thickness = 1
+
+    -- Animation au survol
+    button.MouseEnter:Connect(function()
+        TweenService:Create(button, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(70, 0, 100)}):Play() -- Violet plus clair au survol
+    end)
+
+    button.MouseLeave:Connect(function()
+        TweenService:Create(button, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(50, 0, 80)}):Play() -- Retour à la couleur de base
+    end)
+
+    return button
+end
+
+-- Création des boutons
+StaminaButton = createButton(MainFrame, "Activer Infini Stamina", UDim2.new(0.1, 0, 0.2, 0))
+IncreaseReachButton = createButton(MainFrame, "Augmenter Reach", UDim2.new(0.1, 0, 0.35, 0))
+DecreaseReachButton = createButton(MainFrame, "Réduire Reach", UDim2.new(0.1, 0, 0.5, 0))
+ShowReachButton = createButton(MainFrame, "Afficher Reach", UDim2.new(0.1, 0, 0.65, 0))
+TransparencySlider = createButton(MainFrame, "Changer Transparence", UDim2.new(0.1, 0, 0.8, 0))
+
+-- Déplacement du menu
+local dragging, dragStart, startPos
+MainFrame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragStart = input.Position
+        startPos = MainFrame.Position
+    end
+end)
+
+MainFrame.InputChanged:Connect(function(input)
+    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+        local delta = input.Position - dragStart
+        MainFrame.Position = UDim2.new(
+            startPos.X.Scale,
+            startPos.X.Offset + delta.X,
+            startPos.Y.Scale,
+            startPos.Y.Offset + delta.Y
+        )
+    end
+end)
+
+MainFrame.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = false
+    end
+end)
+
+-- Variables pour les fonctionnalités
+local staminaInfinite = false
+local reachValue = 5  -- Valeur par défaut de la reach
+local maxReach = 500  -- Valeur maximale de reach
+local reachBlock = nil  -- Bloc de reach
+local transparencyLevel = 0.5  -- Transparence initiale (50%)
+
+-- Fonctionnalité d'endurance infinie
+StaminaButton.MouseButton1Click:Connect(function()
+    staminaInfinite = not staminaInfinite
+
+    if staminaInfinite then
+        StaminaButton.Text = "Désactiver Infini Stamina"
+
+        -- Activation de l'endurance infinie
+        local player = Players.LocalPlayer
+        spawn(function()
+            while staminaInfinite do
+                RunService.Stepped:Wait()
+                local humanoid = player.Character and player.Character:FindFirstChild("Humanoid")
+                if humanoid then
+                    humanoid.Stamina = 100
+                end
+            end
+        end)
+    else
+        StaminaButton.Text = "Activer Infini Stamina"
+    end
+end)
+
+-- Fonctionnalité pour augmenter et réduire la reach
+IncreaseReachButton.MouseButton1Click:Connect(function()
+    if reachValue < maxReach then
+        reachValue = math.min(reachValue + 5, maxReach)
+    end
+end)
+
+DecreaseReachButton.MouseButton1Click:Connect(function()
+    if reachValue > 5 then
+        reachValue = math.max(reachValue - 5, 5)
+    end
+end)
+
+-- Fonctionnalité pour afficher la reach
+ShowReachButton.MouseButton1Click:Connect(function()
+    if not reachBlock then
+        reachBlock = Instance.new("Part")
+        reachBlock.Size = Vector3.new(reachValue, 1, reachValue)
+        reachBlock.Anchored = true
+        reachBlock.Transparency = transparencyLevel
+        reachBlock.BrickColor = BrickColor.new("Bright green")
+        reachBlock.Parent = Workspace
+    else
+        reachBlock.Size = Vector3.new(reachValue, 1, reachValue)
+    end
+end)
+
+-- Fonctionnalité pour changer la transparence
+TransparencySlider.MouseButton1Click:Connect(function()
+    transparencyLevel = (transparencyLevel + 0.1) % 1
+    if reachBlock then
+        reachBlock.Transparency = transparencyLevel
+    end
+end)
